@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>App.JE/Works Training - Live Scores</title>
+<style>
+:root{--bg:#f5f6f2;--card:#fff;--ink:#17262b;--mut:#66767b;--line:#dde2de;--rail:#0e4a7b;--gold:#c8901a;--ok:#1e7a46;--bad:#b3261e}
+@media(prefers-color-scheme:dark){:root{--bg:#10181b;--card:#182327;--ink:#e8eeee;--mut:#8fa1a6;--line:#2a373c;--rail:#6fb1e6;--gold:#e0b04a;--ok:#5cc08a;--bad:#f08a82}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--rail);color:#fff;padding:14px 16px 12px}
+@media(prefers-color-scheme:dark){header{background:#16313f;color:#e8eeee}}
+h1{margin:0;font-size:18px;font-weight:700;letter-spacing:.2px}
+.sub{font-size:12.5px;opacity:.85;margin-top:2px}
+.live{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5eea9a;margin-right:6px;animation:p 1.8s infinite}
+@keyframes p{50%{opacity:.35}}@media(prefers-reduced-motion:reduce){.live{animation:none}}
+main{max-width:760px;margin:0 auto;padding:12px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card)}
+.seg button{border:0;background:none;color:var(--ink);padding:8px 12px;font:inherit;cursor:pointer}
+.seg button.on{background:var(--rail);color:#fff}
+@media(prefers-color-scheme:dark){.seg button.on{background:#2b5b7d}}
+select,input,textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+input[type=search]{flex:1;min-width:150px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+th{font-size:12px;font-weight:600;color:var(--mut);text-align:right;padding:8px 6px;border-bottom:1px solid var(--line)}
+td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+th:nth-child(2),td:nth-child(2){text-align:left}
+th:first-child,td:first-child{text-align:center;width:42px}
+tr:last-child td{border-bottom:0}
+.rk{font-weight:700;font-size:16px}
+tr.t1 .rk{color:var(--gold)}tr.t2 .rk,tr.t3 .rk{color:var(--rail)}
+.nm{font-weight:600}.meta{font-size:12px;color:var(--mut)}
+.tot{font-weight:700}
+.empty{padding:28px;text-align:center;color:var(--mut)}
+footer{max-width:760px;margin:6px auto 30px;padding:0 12px;font-size:12.5px;color:var(--mut)}
+footer a{color:var(--rail);cursor:pointer;text-decoration:underline}
+#admin{display:none;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin-top:12px;color:var(--ink)}
+#admin h2{font-size:15px;margin:14px 0 6px}#admin h2:first-child{margin-top:0}
+#admin .row{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+#admin textarea{width:100%;min-height:130px;font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.btn{background:var(--rail);color:#fff;border:0;border-radius:8px;padding:9px 14px;font:inherit;font-weight:600;cursor:pointer}
+@media(prefers-color-scheme:dark){.btn{background:#2b5b7d}}
+.btn.alt{background:none;color:var(--rail);border:1px solid var(--rail)}
+#msg{margin-top:8px;font-size:13.5px;white-space:pre-wrap}
+</style></head><body>
+<header><h1>App.JE/Works Training - Live Scores</h1>
+<div class="sub"><span class="live"></span>Civil Engineering Training Academy, NCR Kanpur. Updates automatically.</div></header>
+<main>
+<div class="bar">
+ <div class="seg" id="scope"><button data-v="ALL" class="on">Overall</button><button data-v="NR">NR</button><button data-v="NCR">NCR</button></div>
+ <select id="phase" aria-label="Phase"></select>
+ <select id="div" aria-label="Division"><option value="">All divisions</option></select>
+ <input type="search" id="q" placeholder="Search name or roll no.">
+</div>
+<table><thead><tr><th>Rank</th><th>Name</th><th>Exam</th><th>Viva</th><th>Total</th></tr></thead><tbody id="rows"></tbody></table>
+<div id="note" class="meta" style="margin-top:8px"></div>
+
+<div id="admin">
+ <h2 id="who">Admin login</h2>
+ <div id="loginBox"><div class="row"><input id="em" type="email" placeholder="Email" autocomplete="username"><input id="pw" type="password" placeholder="Password" autocomplete="current-password"><button class="btn" id="login">Log in</button></div></div>
+ <div id="tools" style="display:none">
+  <h2>Import Phase I results (131 students)</h2>
+  <div class="row"><button class="btn alt" id="seed">Import Phase I data</button></div>
+  <h2>Add or update marks</h2>
+  <div class="meta">One student per line: roll no, exam, viva (comma or tab separated). Leave exam or viva blank if not held yet.</div>
+  <div class="row"><select id="aph"></select></div>
+  <textarea id="bulk" placeholder="4, 80, 41&#10;5, 70.5, &#10;6, , 38"></textarea>
+  <div class="row"><button class="btn" id="save">Save marks</button><button class="btn alt" id="out">Log out</button></div>
+ </div>
+ <div id="msg"></div>
+</div>
+</main>
+<footer>Ranks use total of exam + viva; students with equal totals share a rank. NR = UMB, JAT, DLI, MB, LKO, FZR. NCR = AGC, JHS, PRYJ. <a id="adm">Admin</a></footer>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getFirestore,collection,onSnapshot,doc,setDoc,writeBatch} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const app=initializeApp({apiKey:"AIzaSyAV86sYdat-J42sJySZainWbY3mdp1K6MY",authDomain:"student-training-portal.firebaseapp.com",projectId:"student-training-portal",storageBucket:"student-training-portal.firebasestorage.app",messagingSenderId:"906323709584",appId:"1:906323709584:web:7764a5474fe3de7c699215"});
+const db=getFirestore(app),auth=getAuth(app);
+const SEED=[{"id":"106","Name":"Avneesh Kumar","Division":"JHS","Zone":"NCR","Ph-I Exam":92.5,"Ph-I Viva":42.0},{"id":"89","Name":"Roop Kumar Verma","Division":"JHS","Zone":"NCR","Ph-I Exam":91.5,"Ph-I Viva":38.0},{"id":"86","Name":"Amit Pathak","Division":"DLI","Zone":"NR","Ph-I Exam":85.0,"Ph-I Viva":44.0},{"id":"76","Name":"Ayush Khajuria","Division":"DLI","Zone":"NR","Ph-I Exam":88.5,"Ph-I Viva":40.0},{"id":"4","Name":"Mohit","Division":"UMB","Zone":"NR","Ph-I Exam":84.0,"Ph-I Viva":44.0},{"id":"41","Name":"Abhishek Gorkha","Division":"FZR","Zone":"NR","Ph-I Exam":86.0,"Ph-I Viva":41.0},{"id":"9","Name":"Abhishek Singh","Division":"UMB","Zone":"NR","Ph-I Exam":83.0,"Ph-I Viva":44.0},{"id":"49","Name":"Abhishek Thakur","Division":"DLI","Zone":"NR","Ph-I Exam":88.0,"Ph-I Viva":39.0},{"id":"26","Name":"Manish Arya","Division":"AGC","Zone":"NCR","Ph-I Exam":87.5,"Ph-I Viva":39.0},{"id":"81","Name":"Abhishek","Division":"DLI","Zone":"NR","Ph-I Exam":82.0,"Ph-I Viva":43.0},{"id":"36","Name":"Munish Pathania","Division":"FZR","Zone":"NR","Ph-I Exam":83.0,"Ph-I Viva":42.0},{"id":"104","Name":"Raushan Raj","Division":"JHS","Zone":"NCR","Ph-I Exam":84.0,"Ph-I Viva":41.0},{"id":"58","Name":"Shashwat Pandey","Division":"DLI","Zone":"NR","Ph-I Exam":81.0,"Ph-I Viva":43.0},{"id":"48","Name":"Kapil Kumar","Division":"DLI","Zone":"NR","Ph-I Exam":84.5,"Ph-I Viva":39.0},{"id":"53","Name":"Sachin Singh Negi","Division":"DLI","Zone":"NR","Ph-I Exam":82.5,"Ph-I Viva":41.0},{"id":"67","Name":"Vicky Kumar","Division":"DLI","Zone":"NR","Ph-I Exam":83.0,"Ph-I Viva":40.0},{"id":"98","Name":"Prince Raj","Division":"JHS","Zone":"NCR","Ph-I Exam":84.0,"Ph-I Viva":38.0},{"id":"12","Name":"Rohit","Division":"UMB","Zone":"NR","Ph-I Exam":83.0,"Ph-I Viva":39.0},{"id":"120","Name":"Anand Kumar Yadav","Division":"PRYJ","Zone":"NCR","Ph-I Exam":83.0,"Ph-I Viva":38.0},{"id":"83","Name":"Rahul Chauhan","Division":"DLI","Zone":"NR","Ph-I Exam":78.0,"Ph-I Viva":43.0},{"id":"31","Name":"Deepak Kumar","Division":"JAT","Zone":"NR","Ph-I Exam":79.5,"Ph-I Viva":41.0},{"id":"54","Name":"Suhel Tomar","Division":"DLI","Zone":"NR","Ph-I Exam":80.5,"Ph-I Viva":40.0},{"id":"116","Name":"Abhishek Kumar Patel","Division":"PRYJ","Zone":"NCR","Ph-I Exam":81.0,"Ph-I Viva":39.0},{"id":"52","Name":"Aman","Division":"DLI","Zone":"NR","Ph-I Exam":86.0,"Ph-I Viva":34.0},{"id":"88","Name":"Ashish Thakur","Division":"DLI","Zone":"NR","Ph-I Exam":77.0,"Ph-I Viva":43.0},{"id":"57","Name":"Kunal","Division":"DLI","Zone":"NR","Ph-I Exam":80.0,"Ph-I Viva":40.0},{"id":"115","Name":"Harsh","Division":"PRYJ","Zone":"NCR","Ph-I Exam":78.5,"Ph-I Viva":41.0},{"id":"14","Name":"Chander Prakash","Division":"UMB","Zone":"NR","Ph-I Exam":79.0,"Ph-I Viva":40.0},{"id":"78","Name":"Shakshi Choudhary","Division":"DLI","Zone":"NR","Ph-I Exam":77.0,"Ph-I Viva":42.0},{"id":"125","Name":"Sunil Kumar","Division":"PRYJ","Zone":"NCR","Ph-I Exam":82.0,"Ph-I Viva":37.0},{"id":"63","Name":"Harsh Kumar","Division":"DLI","Zone":"NR","Ph-I Exam":75.0,"Ph-I Viva":43.0},{"id":"23","Name":"Pawan Verma","Division":"AGC","Zone":"NCR","Ph-I Exam":76.0,"Ph-I Viva":42.0},{"id":"16","Name":"Sachin Singh Rana","Division":"UMB","Zone":"NR","Ph-I Exam":77.0,"Ph-I Viva":41.0},{"id":"38","Name":"Sanjay Singh Kardam","Division":"FZR","Zone":"NR","Ph-I Exam":76.0,"Ph-I Viva":42.0},{"id":"21","Name":"Mohd. Arshad","Division":"AGC","Zone":"NCR","Ph-I Exam":79.5,"Ph-I Viva":38.0},{"id":"117","Name":"Saurav Yadav","Division":"PRYJ","Zone":"NCR","Ph-I Exam":80.5,"Ph-I Viva":37.0},{"id":"99","Name":"Snehanshu Mishra","Division":"JHS","Zone":"NCR","Ph-I Exam":78.5,"Ph-I Viva":39.0},{"id":"96","Name":"Vaibhav Kant Mishra","Division":"JHS","Zone":"NCR","Ph-I Exam":82.5,"Ph-I Viva":35.0},{"id":"47","Name":"Aman Kumar","Division":"DLI","Zone":"NR","Ph-I Exam":77.0,"Ph-I Viva":40.0},{"id":"75","Name":"Anand Kumar","Division":"DLI","Zone":"NR","Ph-I Exam":79.0,"Ph-I Viva":38.0},{"id":"100","Name":"Kundan Singh","Division":"JHS","Zone":"NCR","Ph-I Exam":76.0,"Ph-I Viva":41.0},{"id":"11","Name":"Rahul Kumar","Division":"UMB","Zone":"NR","Ph-I Exam":75.0,"Ph-I Viva":42.0},{"id":"13","Name":"Subham Chaudhary","Division":"UMB","Zone":"NR","Ph-I Exam":77.0,"Ph-I Viva":40.0},{"id":"84","Name":"Vipul Kumar","Division":"DLI","Zone":"NR","Ph-I Exam":82.0,"Ph-I Viva":35.0},{"id":"50","Name":"Ashish Baluni","Division":"DLI","Zone":"NR","Ph-I Exam":76.5,"Ph-I Viva":40.0},{"id":"44","Name":"Divyanshu Saini","Division":"DLI","Zone":"NR","Ph-I Exam":81.5,"Ph-I Viva":35.0},{"id":"6","Name":"Aakash Kumar","Division":"UMB","Zone":"NR","Ph-I Exam":79.0,"Ph-I Viva":37.0},{"id":"8","Name":"Deepak","Division":"UMB","Zone":"NR","Ph-I Exam":73.0,"Ph-I Viva":43.0},{"id":"97","Name":"Deepak Verma","Division":"JHS","Zone":"NCR","Ph-I Exam":77.0,"Ph-I Viva":39.0},{"id":"25","Name":"Prashant","Division":"AGC","Zone":"NCR","Ph-I Exam":78.0,"Ph-I Viva":38.0},{"id":"127","Name":"Dev Prakash","Division":"PRYJ","Zone":"NCR","Ph-I Exam":76.5,"Ph-I Viva":39.0},{"id":"74","Name":"Akanksha Rawat","Division":"DLI","Zone":"NR","Ph-I Exam":76.0,"Ph-I Viva":39.0},{"id":"43","Name":"Amit Meenia","Division":"FZR","Zone":"NR","Ph-I Exam":81.0,"Ph-I Viva":34.0},{"id":"94","Name":"Pankaj Jaiswal","Division":"JHS","Zone":"NCR","Ph-I Exam":75.0,"Ph-I Viva":40.0},{"id":"51","Name":"Priyank Thapliyal","Division":"DLI","Zone":"NR","Ph-I Exam":74.0,"Ph-I Viva":41.0},{"id":"30","Name":"Tarun Kumar","Division":"JAT","Zone":"NR","Ph-I Exam":78.0,"Ph-I Viva":37.0},{"id":"18","Name":"Atul Sharma","Division":"UMB","Zone":"NR","Ph-I Exam":75.5,"Ph-I Viva":39.0},{"id":"108","Name":"Mayankdeep","Division":"JHS","Zone":"NCR","Ph-I Exam":72.5,"Ph-I Viva":42.0},{"id":"123","Name":"Satyam Tripathi","Division":"PRYJ","Zone":"NCR","Ph-I Exam":78.5,"Ph-I Viva":36.0},{"id":"62","Name":"Adarsh Kumar","Division":"DLI","Zone":"NR","Ph-I Exam":75.0,"Ph-I Viva":39.0},{"id":"111","Name":"Akhila Kumar Shukla","Division":"JHS","Zone":"NCR","Ph-I Exam":73.0,"Ph-I Viva":41.0},{"id":"91","Name":"Anuj Tiwari","Division":"JHS","Zone":"NCR","Ph-I Exam":72.0,"Ph-I Viva":42.0},{"id":"33","Name":"Kushveer Meena","Division":"JAT","Zone":"NR","Ph-I Exam":76.0,"Ph-I Viva":38.0},{"id":"69","Name":"Sankalp Pandey","Division":"DLI","Zone":"NR","Ph-I Exam":71.0,"Ph-I Viva":43.0},{"id":"46","Name":"Vivek Paneru","Division":"DLI","Zone":"NR","Ph-I Exam":79.0,"Ph-I Viva":35.0},{"id":"79","Name":"Bhupinder Singh","Division":"DLI","Zone":"NR","Ph-I Exam":76.5,"Ph-I Viva":37.0},{"id":"2","Name":"Mohit Mishra","Division":"UMB","Zone":"NR","Ph-I Exam":73.5,"Ph-I Viva":40.0},{"id":"10","Name":"Aman Chauhan","Division":"UMB","Zone":"NR","Ph-I Exam":72.0,"Ph-I Viva":41.0},{"id":"27","Name":"Sanjeev Kumar","Division":"AGC","Zone":"NCR","Ph-I Exam":77.0,"Ph-I Viva":36.0},{"id":"131","Name":"Santosh Kumar Singh","Division":"PRYJ","Zone":"NCR","Ph-I Exam":74.5,"Ph-I Viva":38.0},{"id":"102","Name":"Himanshu Prajapati","Division":"JHS","Zone":"NCR","Ph-I Exam":70.0,"Ph-I Viva":42.0},{"id":"55","Name":"Jagmohan Singh Panwar","Division":"DLI","Zone":"NR","Ph-I Exam":74.0,"Ph-I Viva":38.0},{"id":"82","Name":"Neeraj","Division":"DLI","Zone":"NR","Ph-I Exam":73.0,"Ph-I Viva":39.0},{"id":"110","Name":"Abhishek Meena","Division":"JHS","Zone":"NCR","Ph-I Exam":78.0,"Ph-I Viva":33.0},{"id":"5","Name":"Deepak Rana","Division":"UMB","Zone":"NR","Ph-I Exam":74.5,"Ph-I Viva":36.0},{"id":"64","Name":"Ramkishan","Division":"DLI","Zone":"NR","Ph-I Exam":71.5,"Ph-I Viva":39.0},{"id":"29","Name":"Mukesh Rana","Division":"JAT","Zone":"NR","Ph-I Exam":72.0,"Ph-I Viva":38.0},{"id":"103","Name":"Neeraj Kumar Mourya","Division":"JHS","Zone":"NCR","Ph-I Exam":71.0,"Ph-I Viva":39.0},{"id":"72","Name":"Ashish Kumar","Division":"DLI","Zone":"NR","Ph-I Exam":72.5,"Ph-I Viva":37.0},{"id":"35","Name":"Basera Yousof","Division":"FZR","Zone":"NR","Ph-I Exam":72.0,"Ph-I Viva":37.0},{"id":"80","Name":"Gaurav Kumar","Division":"DLI","Zone":"NR","Ph-I Exam":69.0,"Ph-I Viva":40.0},{"id":"122","Name":"Krishna Kant Dwivedi","Division":"PRYJ","Zone":"NCR","Ph-I Exam":71.0,"Ph-I Viva":38.0},{"id":"40","Name":"Pushapdeep Baboria","Division":"FZR","Zone":"NR","Ph-I Exam":70.0,"Ph-I Viva":39.0},{"id":"101","Name":"Abhinav Yadav","Division":"JHS","Zone":"NCR","Ph-I Exam":70.5,"Ph-I Viva":38.0},{"id":"7","Name":"Lakshay Kumar Sharma","Division":"UMB","Zone":"NR","Ph-I Exam":66.5,"Ph-I Viva":42.0},{"id":"24","Name":"Antima Verma","Division":"AGC","Zone":"NCR","Ph-I Exam":70.0,"Ph-I Viva":38.0},{"id":"65","Name":"Chanchal","Division":"DLI","Zone":"NR","Ph-I Exam":69.0,"Ph-I Viva":39.0},{"id":"114","Name":"Madhav Murari","Division":"PRYJ","Zone":"NCR","Ph-I Exam":74.0,"Ph-I Viva":34.0},{"id":"15","Name":"Devang","Division":"UMB","Zone":"NR","Ph-I Exam":69.5,"Ph-I Viva":38.0},{"id":"1","Name":"Suraj Kumar","Division":"UMB","Zone":"NR","Ph-I Exam":70.5,"Ph-I Viva":37.0},{"id":"61","Name":"Vikas Matwan","Division":"DLI","Zone":"NR","Ph-I Exam":70.0,"Ph-I Viva":37.0},{"id":"60","Name":"Abhinav Kumar Mougha","Division":"DLI","Zone":"NR","Ph-I Exam":65.5,"Ph-I Viva":41.0},{"id":"70","Name":"Kulvinder Ahlawat","Division":"DLI","Zone":"NR","Ph-I Exam":69.5,"Ph-I Viva":37.0},{"id":"85","Name":"Pradeep Rana","Division":"DLI","Zone":"NR","Ph-I Exam":67.5,"Ph-I Viva":39.0},{"id":"121","Name":"Pradumn Maurya","Division":"PRYJ","Zone":"NCR","Ph-I Exam":68.5,"Ph-I Viva":38.0},{"id":"77","Name":"Ridhan Singh","Division":"DLI","Zone":"NR","Ph-I Exam":73.5,"Ph-I Viva":33.0},{"id":"109","Name":"Sonoo Jaiswal","Division":"JHS","Zone":"NCR","Ph-I Exam":70.5,"Ph-I Viva":36.0},{"id":"71","Name":"Dinesh Kumar Patel","Division":"DLI","Zone":"NR","Ph-I Exam":69.0,"Ph-I Viva":37.0},{"id":"118","Name":"Ishant Kumar","Division":"PRYJ","Zone":"NCR","Ph-I Exam":71.0,"Ph-I Viva":35.0},{"id":"90","Name":"Naved Raza","Division":"JHS","Zone":"NCR","Ph-I Exam":72.0,"Ph-I Viva":34.0},{"id":"126","Name":"Roshan Maurya","Division":"PRYJ","Zone":"NCR","Ph-I Exam":71.0,"Ph-I Viva":35.0},{"id":"3","Name":"Sumeet Attri","Division":"UMB","Zone":"NR","Ph-I Exam":70.5,"Ph-I Viva":35.0},{"id":"130","Name":"Kartikeya","Division":"PRYJ","Zone":"NCR","Ph-I Exam":70.0,"Ph-I Viva":35.0},{"id":"112","Name":"Azaad Kumar Shah","Division":"JHS","Zone":"NCR","Ph-I Exam":68.5,"Ph-I Viva":36.0},{"id":"73","Name":"Gajendra Pal Singh","Division":"DLI","Zone":"NR","Ph-I Exam":66.5,"Ph-I Viva":38.0},{"id":"45","Name":"Robin Kumar","Division":"DLI","Zone":"NR","Ph-I Exam":67.0,"Ph-I Viva":37.0},{"id":"37","Name":"Parmod Singh","Division":"FZR","Zone":"NR","Ph-I Exam":70.0,"Ph-I Viva":33.0},{"id":"93","Name":"Subham Mishra","Division":"JHS","Zone":"NCR","Ph-I Exam":63.0,"Ph-I Viva":40.0},{"id":"66","Name":"Arjun Singh","Division":"DLI","Zone":"NR","Ph-I Exam":64.0,"Ph-I Viva":38.0},{"id":"124","Name":"Brajesh Yadav","Division":"PRYJ","Zone":"NCR","Ph-I Exam":65.0,"Ph-I Viva":37.0},{"id":"113","Name":"Jai Prakash Mishra","Division":"PRYJ","Zone":"NCR","Ph-I Exam":67.0,"Ph-I Viva":35.0},{"id":"17","Name":"Parveen Kumar","Division":"UMB","Zone":"NR","Ph-I Exam":66.0,"Ph-I Viva":36.0},{"id":"22","Name":"Satyam Tiwari","Division":"AGC","Zone":"NCR","Ph-I Exam":60.5,"Ph-I Viva":41.0},{"id":"68","Name":"Sonu Kumar","Division":"DLI","Zone":"NR","Ph-I Exam":60.0,"Ph-I Viva":41.0},{"id":"129","Name":"Amit Verma","Division":"PRYJ","Zone":"NCR","Ph-I Exam":66.5,"Ph-I Viva":34.0},{"id":"32","Name":"Aasif Nabi","Division":"JAT","Zone":"NR","Ph-I Exam":60.0,"Ph-I Viva":39.0},{"id":"105","Name":"Ajay Yadav","Division":"JHS","Zone":"NCR","Ph-I Exam":60.0,"Ph-I Viva":39.0},{"id":"59","Name":"Ankit Kumar","Division":"DLI","Zone":"NR","Ph-I Exam":64.0,"Ph-I Viva":35.0},{"id":"92","Name":"Neeraj Vishwakarma","Division":"JHS","Zone":"NCR","Ph-I Exam":62.5,"Ph-I Viva":35.0},{"id":"128","Name":"Avanish Ram","Division":"PRYJ","Zone":"NCR","Ph-I Exam":62.0,"Ph-I Viva":35.0},{"id":"95","Name":"Neeraj Kushwaha","Division":"JHS","Zone":"NCR","Ph-I Exam":63.0,"Ph-I Viva":34.0},{"id":"119","Name":"Rahul Maurya","Division":"PRYJ","Zone":"NCR","Ph-I Exam":63.0,"Ph-I Viva":34.0},{"id":"107","Name":"Ayush Sagar","Division":"JHS","Zone":"NCR","Ph-I Exam":61.0,"Ph-I Viva":35.0},{"id":"34","Name":"Shahzada Athar Ishaq Shah","Division":"FZR","Zone":"NR","Ph-I Exam":60.0,"Ph-I Viva":36.0},{"id":"28","Name":"Muzamil Rashid","Division":"JAT","Zone":"NR","Ph-I Exam":54.5,"Ph-I Viva":41.0},{"id":"39","Name":"Pankaj Pal","Division":"FZR","Zone":"NR","Ph-I Exam":62.0,"Ph-I Viva":33.0},{"id":"56","Name":"Arjun Pratap Chauhan","Division":"DLI","Zone":"NR","Ph-I Exam":51.0,"Ph-I Viva":42.0},{"id":"87","Name":"Preeti Aggarwal","Division":"DLI","Zone":"NR","Ph-I Exam":50.0,"Ph-I Viva":42.0},{"id":"20","Name":"Anurag Tripathi","Division":"MB","Zone":"NR","Ph-I Exam":51.0,"Ph-I Viva":32.0},{"id":"42","Name":"Mukesh","Division":"FZR","Zone":"NR","Ph-I Exam":46.5,"Ph-I Viva":34.0},{"id":"19","Name":"Chetan Meena","Division":"LKO","Zone":"NR","Ph-I Exam":27.0}];
+const ROM=["I","II","III","IV","V","VI","VII","VIII","IX","X"];
+const NCR=["AGC","JHS","PRYJ"];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const zone=d=>NCR.includes(d.Division)?"NCR":"NR";
+let students=[],scope="ALL",phase="",PH=[];
+
+ROM.forEach(r=>$("aph").insertAdjacentHTML("beforeend",`<option value="${r}">Phase ${r}</option>`));
+
+function phasesIn(){const s=new Set();students.forEach(d=>Object.keys(d).forEach(k=>{const m=k.match(/^Ph-([IVX]+) (Exam|Viva)$/);if(m)s.add(m[1])}));return ROM.filter(r=>s.has(r))}
+function calc(d,use){let e=0,v=0,ne=0,nv=0;for(const p of use){const a=d[`Ph-${p} Exam`],b=d[`Ph-${p} Viva`];if(typeof a==="number"){e+=a;ne++}if(typeof b==="number"){v+=b;nv++}}
+ return {e:ne?e:null,v:nv?v:null,t:(ne===use.length&&nv===use.length&&use.length)?e+v:null}}
+function rankIn(list){const m=new Map(),r=list.filter(x=>x.t!==null).sort((a,b)=>b.t-a.t);r.forEach((x,i)=>m.set(x.id,i&&r[i-1].t===x.t?m.get(r[i-1].id):i+1));return m}
+const f=n=>n===null?"-":(Math.round(n*100)/100).toString();
+
+function buildSelectors(){
+ PH=phasesIn();
+ const opts=PH.map(p=>`<option value="${p}">Phase ${p}</option>`);
+ if(PH.length>1)opts.push(`<option value="ALL">All phases</option>`);
+ const sel=$("phase");if(!phase||![...PH,"ALL"].includes(phase))phase=PH[PH.length-1]||"";
+ sel.innerHTML=opts.join("");sel.value=phase;
+ const dv=$("div"),cur=dv.value,ds=[...new Set(students.map(s=>s.Division).filter(Boolean))].sort();
+ dv.innerHTML=`<option value="">All divisions</option>`+ds.map(x=>`<option>${esc(x)}</option>`).join("");dv.value=cur;
+}
+function render(){
+ const use=phase==="ALL"?PH:phase?[phase]:[];
+ const all=students.map(d=>({...d,...calc(d,use)}));
+ const inScope=all.filter(d=>scope==="ALL"||zone(d)===scope);
+ const rs=rankIn(inScope);
+ const dr={};[...new Set(all.map(d=>d.Division))].forEach(v=>dr[v]=rankIn(all.filter(d=>d.Division===v)));
+ const q=$("q").value.trim().toLowerCase(),dv=$("div").value;
+ let list=inScope.filter(d=>(!dv||d.Division===dv)&&(!q||(d.Name||"").toLowerCase().includes(q)||d.id.toLowerCase()===q||d.id.startsWith(q)));
+ list.sort((a,b)=>(rs.get(a.id)||1e9)-(rs.get(b.id)||1e9)||(a.Name||"").localeCompare(b.Name||""));
+ $("rows").innerHTML=list.length?list.map(d=>{const r=rs.get(d.id);
+  return `<tr class="${r&&r<4?"t"+r:""}"><td class="rk">${r??"-"}</td><td><div class="nm">${esc(d.Name)}</div><div class="meta">Roll ${esc(d.id)} / ${esc(d.Division)}${dr[d.Division].get(d.id)?` / Div rank ${dr[d.Division].get(d.id)}`:""}</div></td><td>${f(d.e)}</td><td>${f(d.v)}</td><td class="tot">${f(d.t)}</td></tr>`}).join("")
+  :`<tr><td colspan="5" class="empty">${students.length?"No student matches.":"Loading..."}</td></tr>`;
+ const unr=inScope.filter(d=>d.t===null).length;
+ $("note").textContent=`${list.length} shown, ${inScope.length} in this list`+(unr?`. ${unr} not ranked (marks incomplete or absent).`:".");
+}
+onSnapshot(collection(db,"Students"),snap=>{students=snap.docs.map(x=>({id:x.id,...x.data()}));buildSelectors();render()},
+ e=>{$("rows").innerHTML=`<tr><td colspan="5" class="empty">Could not load scores. ${esc(e.message)}</td></tr>`});
+
+$("scope").onclick=e=>{const b=e.target.closest("button");if(!b)return;scope=b.dataset.v;[...$("scope").children].forEach(x=>x.classList.toggle("on",x===b));render()};
+$("phase").onchange=e=>{phase=e.target.value;render()};
+$("div").onchange=render;$("q").oninput=render;
+
+// admin
+const msg=t=>$("msg").textContent=t;
+$("adm").onclick=()=>{const a=$("admin");a.style.display=a.style.display==="block"?"none":"block"};
+$("login").onclick=async()=>{try{await signInWithEmailAndPassword(auth,$("em").value.trim(),$("pw").value);msg("")}catch(e){msg("Login failed: "+e.code)}};
+$("out").onclick=()=>signOut(auth);
+onAuthStateChanged(auth,u=>{$("loginBox").style.display=u?"none":"block";$("tools").style.display=u?"block":"none";$("who").textContent=u?"Admin: "+u.email:"Admin login"});
+$("seed").onclick=async()=>{
+ if(!confirm("Import/overwrite Phase I data for "+SEED.length+" students?"))return;
+ try{const b=writeBatch(db);SEED.forEach(s=>{const {id,...data}=s;b.set(doc(db,"Students",id),data,{merge:true})});await b.commit();msg("Imported "+SEED.length+" students.")}catch(e){msg("Import failed: "+e.message)}};
+$("save").onclick=async()=>{
+ const p=$("aph").value,ids=new Set(students.map(s=>s.id)),b=writeBatch(db),bad=[];let n=0;
+ for(const line of $("bulk").value.split("\n")){
+  if(!line.trim())continue;const c=line.split(/[\t,;]+/).map(x=>x.trim());const id=c[0];
+  if(!ids.has(id)){bad.push(line.trim());continue}
+  const data={};const e=parseFloat(c[1]),v=parseFloat(c[2]);
+  if(!isNaN(e))data[`Ph-${p} Exam`]=e;if(!isNaN(v))data[`Ph-${p} Viva`]=v;
+  if(Object.keys(data).length){b.set(doc(db,"Students",id),data,{merge:true});n++}}
+ try{if(n)await b.commit();msg(`Saved ${n} students for Phase ${p}.`+(bad.length?`\nRoll no. not found, skipped:\n${bad.join("\n")}`:""))}catch(e){msg("Save failed: "+e.message)}};
+</script></body></html>
